@@ -1,0 +1,23 @@
+{
+  "name": "vdsr-libs",
+  "version": "1.0.0",
+  "description": "Project-specific libraries that are used by STW Technic LP",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bberry6/vdsr-libs.git"
+  },
+  "author": "Brett Berry <byb810@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bberry6/vdsr-libs/issues"
+  },
+  "homepage": "https://github.com/bberry6/vdsr-libs",
+  "dependencies": {
+    "bluebird": "^2.9.34",
+    "promise-redis": "0.0.1"
+  }
+}
