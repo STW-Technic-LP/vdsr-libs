@@ -9,6 +9,8 @@ client.on("error", function(err){
    console.error("RedisService::createClient => Error in client creation: ", err);
 });
 
+var baseRedis = require('redis');
+
 //var allowedDeviceKeys = ['serial','sid'];
 
 module.exports = {
@@ -36,14 +38,6 @@ function removeConnected(serial){
    return client.srem('connectedDevices', serial);
 }
 
-function setObject(key, obj){
-   var chain = Object.keys(obj).reduce(function(ch, field){
-      var val = JSON.stringify(obj[field]);
-      return ch.hset(key, field, val);
-   }, client.multi());
-   return chain.exec();
-}
-
 function getObject(key){
    return client.hgetall(key)
    .then(function(o){
@@ -61,5 +55,35 @@ function getObject(key){
          o[field] = val;
       });
       return o;
+   });
+}
+
+function setObject(key, obj){
+   return new Bluebird(function(resolve, reject){
+      function setAtomic(key, obj, count){
+         var counts = count;
+         var atomicClient = baseRedis.createClient();
+         atomicClient.watch(key);
+
+         var chain = Object.keys(obj).reduce(function(ch, field){
+            var val = typeof obj[field] === 'string' ? obj[field] : JSON.stringify(obj[field]);
+            return ch.hset(key, field, val);
+         }, atomicClient.multi());
+
+         chain.hgetall(key).exec(function(err, results){
+            atomicClient.quit();
+            if(results === null && counts < 10){
+               setAtomic(key, obj, counts++);
+            }
+            if(counts >= 10){
+               return reject(new Error("Could not complete transaction"));
+            }
+            if(err){
+               return reject(err);
+            }
+            return resolve(results);
+         });
+      }
+      setAtomic(key, obj, 0);
    });
 }
