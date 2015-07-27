@@ -8,6 +8,7 @@ var client = redis.createClient();
 client.on("error", function(err){
    console.error("RedisService::createClient => Error in client creation: ", err);
 });
+var _ = require('lodash');
 
 var baseRedis = require('redis');
 
@@ -44,17 +45,7 @@ function getObject(key){
       if(!o){
          return {};
       }
-      Object.keys(o).forEach(function(field){
-         var val;
-         try {
-            val = JSON.parse(o[field]);
-         }
-         catch (e){
-            val = '';
-         }
-         o[field] = val;
-      });
-      return o;
+      return parseObject(o);
    });
 }
 
@@ -86,4 +77,75 @@ function setObject(key, obj){
       }
       setAtomic(key, obj, 0);
    });
+}
+
+function getSet(key, obj, transmute){
+   return new Bluebird(function(resolve, reject){
+      function setAtomic(key, obj, count){
+         var counts = count;
+         var atomicClient = baseRedis.createClient();
+
+         // lock the key
+         atomicClient.watch(key);
+
+         // get the object
+         atomicClient.hgetall(key, function(o){
+            if(!o){
+               return {};
+            }
+            // parse the objects values
+            o = parseObject(o);
+
+            // TODO: make the function async?
+            var newO = transmute(o);
+
+            // set each key using the new object (after transmutation)
+            var chain = Object.keys(newO).reduce(function(ch, field){
+               var val = typeof newO[field] === 'string' ? newO[field] : JSON.stringify(newO[field]);
+               return ch.hset(key, field, val);
+            }, atomicClient.multi());
+
+            // Determine deleted keys
+            var k1 = Object.keys(o);
+            var k2 = Object.keys(newO);
+            var keysToRemove = _.difference(k1, k2);
+
+            // Delete them
+            var nextChain = keysToRemove.reduce(function(ch, field){
+               return ch.hdel(key, field);
+            }, chain);
+
+            // finish the transaction
+            chain.exec(function(err, results){
+               atomicClient.quit();
+               // transaction failed, try again
+               if(results === null && counts < 10){
+                  setAtomic(key, obj, counts++);
+               }
+               // too many failures
+               if(counts >= 10){
+                  return reject(new Error("Could not complete transaction"));
+               }
+               if(err){
+                  return reject(err);
+               }
+               return resolve(results);
+            });
+         });
+      }
+      setAtomic(key, obj, 0);
+   });
+}
+
+function parseObject(o){
+   return Object.keys(o).reduce(function(result, field){
+      var val;
+      try {
+         val = JSON.parse(o[field]);
+      }
+      catch (e){
+         val = '';
+      }
+      result[field] = val;
+   },{});
 }
