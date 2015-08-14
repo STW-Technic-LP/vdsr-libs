@@ -12,9 +12,12 @@ var _ = require('lodash');
 
 var baseRedis = require('redis');
 
+var cfg;
+
 //var allowedDeviceKeys = ['serial','sid'];
 
 module.exports = {
+   setClient: setClient,
    addConnected: addConnected,
    getConnected: getConnected,
    isConnected: isConnected,
@@ -22,6 +25,14 @@ module.exports = {
    setObject: setObject,
    getObject: getObject
 };
+
+function setClient(cfg){
+   client.quit();
+   client = redis.createClient(cfg.port, cfg.host);
+   client.on("error", function(err){
+      console.error("RedisService:;setClient => Error in client creation: ", err);
+   });
+}
 
 function addConnected(serial){
    return client.sadd('connectedDevices', serial);
@@ -53,7 +64,7 @@ function setObject(key, obj){
    return new Bluebird(function(resolve, reject){
       function setAtomic(key, obj, count){
          var counts = count;
-         var atomicClient = baseRedis.createClient();
+         var atomicClient = cfg ? baseRedis.createClient(cfg.port, cfg.host) : baseRedis.createClient();
          atomicClient.watch(key);
 
          var chain = Object.keys(obj).reduce(function(ch, field){
@@ -79,11 +90,12 @@ function setObject(key, obj){
    });
 }
 
-function getSet(key, obj, transmute){
+function getSet(key, transmute){
    return new Bluebird(function(resolve, reject){
-      function setAtomic(key, obj, count){
+      function setAtomic(key, count){
          var counts = count;
-         var atomicClient = baseRedis.createClient();
+
+         var atomicClient = cfg ? baseRedis.createClient(cfg.port, cfg.host) : baseRedis.createClient();
 
          // lock the key
          atomicClient.watch(key);
@@ -120,7 +132,7 @@ function getSet(key, obj, transmute){
                atomicClient.quit();
                // transaction failed, try again
                if(results === null && counts < 10){
-                  setAtomic(key, obj, counts++);
+                  setAtomic(key, counts++);
                }
                // too many failures
                if(counts >= 10){
@@ -133,7 +145,7 @@ function getSet(key, obj, transmute){
             });
          });
       }
-      setAtomic(key, obj, 0);
+      setAtomic(key, 0);
    });
 }
 
