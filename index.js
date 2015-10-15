@@ -1,6 +1,7 @@
 
 module.exports = {
 
-   redisService : require('./libs/redisService.js')
+   redisService : require('./libs/redisService.js'),
+   fsService: require('./libs/fileSystemService.js')
 
 };

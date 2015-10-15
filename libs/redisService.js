@@ -18,6 +18,7 @@ var cfg;
 
 module.exports = {
    setClient: setClient,
+   setDb: setDb,
    addConnected: addConnected,
    getConnected: getConnected,
    isConnected: isConnected,
@@ -25,6 +26,11 @@ module.exports = {
    setObject: setObject,
    getObject: getObject
 };
+
+
+function setDb(db, cb){
+   client.select(db, cb);
+}
 
 function setClient(cfg){
    client.quit();
