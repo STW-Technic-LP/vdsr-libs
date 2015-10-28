@@ -101,7 +101,10 @@ function only(filter, handler) {
 
 // :: (String) -> Promise(Error, [String])
 function list(filePath){
-  return readdirAsync(filePath);
+  return readdirAsync(filePath)
+  .catch(only(isENOENT, function(e){
+     return Promise.resolve([]);
+  }));
 }
 
 // :: (Error) -> Boolean
@@ -230,11 +233,18 @@ function val(prop){
   };
 }
 
+function trace(tag){
+   return function(x){
+      console.log(tag, x);
+      return x;
+   };
+}
+
 function prune(filepath, maxSize){
   return size(filepath)
   .then(function(size){
     if(size < maxSize){
-      return;
+      return Promise.resolve();
     }
     return stat(filepath)
     .then(chronoSort)
@@ -242,9 +252,11 @@ function prune(filepath, maxSize){
     .then(findOvergrowth(size, maxSize))
     .map(val('_filepath'))
     .map(deleteFile);
-  });
+  })
+  .catch(only(isENOENT, function(e){
+     return Promise.resolve();
+  }));
 }
-
 
 // :: (String, String) -> Promise(Error, ())
 function writeFile(filepath, data) {
@@ -252,7 +264,8 @@ function writeFile(filepath, data) {
   .catch(only(isENOENT, function() {
     return mkdirAsync(path.dirname(filepath))
     .then(writeFileAsync.bind(null,filepath, data))
-    .catch(function(){
+    .catch(function(e){
+      console.log("Error when attempting to write file after new folder was created... deleting: ", filepath, e );
       return rmdirAsync(filepath);
     });
   }));
