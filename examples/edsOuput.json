@@ -1,0 +1,87 @@
+{
+    "ErrorFile": "/mnt/dataflash/stwErrFiles/CANOpenError.log",
+    "DatapoolName": "canOpenDPL",
+    "ListName": "canOpenList",
+    "CANOpenData": [
+        {
+            "busprop": "can_0",
+            "configprop": "esx_iox_34460.eds",
+            "nameprop": "34460",
+            "nodeid": "4",
+            "validVariables": [
+                {
+                    "canid": "204",
+                    "varname": "34460_0x6200_01_OUT 1-8",
+                    "varindx": "0x6200",
+                    "varsubindx": "01",
+                    "startBit": 0,
+                    "length": 8,
+                    "type": "u8",
+                    "offset": 0,
+                    "scaling": 1,
+                    "validflag": "false"
+                },
+                {
+                    "canid": "204",
+                    "varname": "34460_0x6200_03_10V",
+                    "varindx": "0x6200",
+                    "varsubindx": "03",
+                    "startBit": 16,
+                    "length": 8,
+                    "type": "u8",
+                    "offset": 0,
+                    "scaling": 1,
+                    "validflag": "false"
+                },
+                {
+                    "canid": "304",
+                    "varname": "34460_0x6411_01_PWM1/IREG1",
+                    "varindx": "0x6411",
+                    "varsubindx": "01",
+                    "startBit": 0,
+                    "length": 16,
+                    "type": "s16",
+                    "offset": 0,
+                    "scaling": 1,
+                    "validflag": "false"
+                },
+                {
+                    "canid": "304",
+                    "varname": "34460_0x6411_02_PWM2/IREG2",
+                    "varindx": "0x6411",
+                    "varsubindx": "02",
+                    "startBit": 16,
+                    "length": 16,
+                    "type": "s16",
+                    "offset": 0,
+                    "scaling": 1,
+                    "validflag": "false"
+                },
+                {
+                    "canid": "304",
+                    "varname": "34460_0x6411_03_PWM3/IREG3",
+                    "varindx": "0x6411",
+                    "varsubindx": "03",
+                    "startBit": 32,
+                    "length": 16,
+                    "type": "s16",
+                    "offset": 0,
+                    "scaling": 1,
+                    "validflag": "false"
+                },
+                {
+                    "canid": "304",
+                    "varname": "34460_0x6411_04_PWM4/IREG4",
+                    "varindx": "0x6411",
+                    "varsubindx": "04",
+                    "startBit": 48,
+                    "length": 16,
+                    "type": "s16",
+                    "offset": 0,
+                    "scaling": 1,
+                    "validflag": "false"
+                }
+            ]
+        }
+    ]
+}

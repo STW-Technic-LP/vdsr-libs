@@ -1,0 +1,14 @@
+Node Inspector v0.12.3
+Visit http://127.0.0.1:8080/?ws=127.0.0.1:8080&port=5858 to start debugging.
+undefined:1
+TypeError: undefined is not a function
+^
+SyntaxError: Unexpected token T
+    at Object.parse (native)
+    at Protocol.execute (_debugger.js:132:52)
+    at Socket.emit (events.js:107:17)
+    at readableAddChunk (_stream_readable.js:163:16)
+    at Socket.Readable.push (_stream_readable.js:126:10)
+    at TCP.onread (net.js:538:20)
+Node Inspector v0.12.3
+Visit http://127.0.0.1:8080/?ws=127.0.0.1:8080&port=5858 to start debugging.
