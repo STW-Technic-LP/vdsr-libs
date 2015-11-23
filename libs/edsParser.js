@@ -141,7 +141,7 @@ function compile(edsObj){
             canid: canid,
             addNodeId: addNodeId,
             type: mapDatatype(edsObj.dictionary[index].subindices[subindex].DataType),
-            varname: edsObj.dictionary[index].subindices[subindex].ParameterName,
+            name: edsObj.dictionary[index].subindices[subindex].ParameterName,
             extid: extid
          };
       });
