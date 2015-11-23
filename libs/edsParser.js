@@ -1,6 +1,7 @@
 var R = require('ramda');
 
 module.exports = function(eds){
+   'use strict';
    var ret = parse(eds);
    ret = compile(ret);
    return ret;
@@ -10,7 +11,6 @@ function parse(eds) {
     'use strict';
 
     var readingValues = false;
-    var inSub = false;
     var bracketedValue = '';
     var subValue = '';
     var type = '';
@@ -32,7 +32,7 @@ function parse(eds) {
         }
     }
 
-    return eds.split('\n').reduce(function (ret, line) {
+    return eds.replace(/\r/g,"").split('\n').reduce(function (ret, line) {
         // ignore comments and empty lines
         if (line.indexOf(';') === 0 || line.length === 0) {
             return ret;
@@ -86,12 +86,11 @@ function parse(eds) {
 }
 
 function compile(edsObj){
+   'use strict';
    var add200Hex = addHex("0x200");
    var ret = Object.keys(edsObj.coms).reduce(function(result, comKey){
       var mapObj = edsObj.maps[add200Hex(comKey)];
       var comObj = edsObj.coms[comKey];
-
-      var currentVar = {};
 
       var toBinaryFromHex = changeBase(2, 16);
       var toHexFromBinary = changeBase(16, 2);
@@ -106,7 +105,7 @@ function compile(edsObj){
          var firstByteBin = "000"+toBinaryFromHex(firstByte);
          firstByteBin = firstByteBin.substr(firstByteBin.length-4);
          if (firstByteBin[0] === "1") {
-            return;
+            return result;
          }
          extid = firstByteBin[2] === "1";
       }
@@ -155,14 +154,17 @@ function compile(edsObj){
 }
 
 function inRangeHex(low, high, v) {
+   'use strict';
     return parseInt(v, 16) >= parseInt(low, 16) && parseInt(v, 16) < parseInt(high, 16);
 }
 
 var changeBase = R.curry(function(endBase, startBase, v) {
+   'use strict';
    return parseInt(v, startBase).toString(endBase).toUpperCase();
 });
 
 var addHex = R.curry(function(a, b){
+   'use strict';
    //if(!(a instanceof String) || !(b instanceof String)){
    //   return new Error("Failed attempt to add non string hex values");
    //}
@@ -170,6 +172,7 @@ var addHex = R.curry(function(a, b){
 });
 
 function mapDatatype(v){
+   'use strict';
    var map = {
       '0x2': 's8',
       '0x3': 's16',
