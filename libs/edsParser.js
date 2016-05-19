@@ -86,6 +86,8 @@ function parse(eds) {
 }
 
 function compile(edsObj){
+   edsObj.maps = cleanUpMaps(edsObj.maps);
+   console.log('***********************************', JSON.stringify(edsObj.maps));
    'use strict';
    var add200Hex = addHex("0x200");
    var ret = Object.keys(edsObj.coms).reduce(function(result, comKey){
@@ -125,6 +127,7 @@ function compile(edsObj){
          var len = parseInt(defValue.substr(8), 16);
          var index = "0x"+defValue.substr(2,4).toUpperCase();
          var subindex = "0x"+defValue.substr(6,2).toUpperCase();
+         console.log('cobIdStr, mapSubIdxKey, index, subindex: ', cobIdStr, mapSubidxKey, index, subindex);
          if(edsObj.dictionary[index].subindices[subindex].PDOMapping === "0"){
             return;
          }
@@ -151,6 +154,22 @@ function compile(edsObj){
    return ret.filter(function(i){
       return i !== undefined;
    });
+}
+
+function cleanUpMaps(maps){
+   return Object.keys(maps).reduce(function(resultMap, key){
+      var mapObj = maps[key];
+      resultMap[key] = mapObj;
+      var numSubs = mapObj.subindices['0x00'].DefaultValue;
+      resultMap[key].subindices = Object.keys(mapObj.subindices).reduce(function(resultSubIdx, key){
+         if(parseInt(key.slice(2),16) > parseInt(numSubs,16)){
+            return resultSubIdx;
+         }
+         resultSubIdx[key] = mapObj.subindices[key];
+         return resultSubIdx;
+      }, {});
+      return resultMap;
+   }, {});
 }
 
 function inRangeHex(low, high, v) {
