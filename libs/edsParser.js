@@ -86,21 +86,31 @@ function parse(eds) {
 }
 
 function compile(edsObj){
-   edsObj.maps = cleanUpMaps(edsObj.maps);
-   console.log('***********************************', JSON.stringify(edsObj.maps));
    'use strict';
+   edsObj.maps = cleanUpMaps(edsObj.maps);
+   //console.log('***********************************', JSON.stringify(edsObj.maps));
+   //console.log('***********************************', JSON.stringify(edsObj.coms));
+   //console.log('***********************************', JSON.stringify(edsObj.dictionary));
    var add200Hex = addHex("0x200");
+   var toBinaryFromHex = changeBase(2, 16);
+   var toHexFromBinary = changeBase(16, 2);
    var ret = Object.keys(edsObj.coms).reduce(function(result, comKey){
       var mapObj = edsObj.maps[add200Hex(comKey)];
       var comObj = edsObj.coms[comKey];
 
-      var toBinaryFromHex = changeBase(2, 16);
-      var toHexFromBinary = changeBase(16, 2);
-
+      // get the cob id
       var cobIdStr = comObj.subindices['0x01'].DefaultValue;
+      if(cobIdStr === undefined){
+         cobIdStr = predefinedCobIds[comKey];
+         if(!cobIdStr){
+            return;
+         }
+      }
       var hexIdx = cobIdStr.indexOf('0x');
       cobIdStr = cobIdStr.substring(hexIdx + 2);
       var extid = false;
+
+      // figure out if it is an extended id
       if (cobIdStr.length > 4) {
          // decode first byte
          var firstByte = cobIdStr[0];
@@ -111,6 +121,8 @@ function compile(edsObj){
          }
          extid = firstByteBin[2] === "1";
       }
+
+      // get can id
       var cobIdBin = toBinaryFromHex(cobIdStr);
       var canidBin = extid ? cobIdBin.substr(-29) : cobIdBin.substr(-11);
       var canid = toHexFromBinary(canidBin);
@@ -127,10 +139,21 @@ function compile(edsObj){
          var len = parseInt(defValue.substr(8), 16);
          var index = "0x"+defValue.substr(2,4).toUpperCase();
          var subindex = "0x"+defValue.substr(6,2).toUpperCase();
-         console.log('cobIdStr, mapSubIdxKey, index, subindex: ', cobIdStr, mapSubidxKey, index, subindex);
-         if(edsObj.dictionary[index].subindices[subindex].PDOMapping === "0"){
-            return;
+         var type;
+         var name;
+
+         if(edsObj.dictionary[index].hasOwnProperty('subindices')){
+            if(edsObj.dictionary[index].subindices[subindex].PDOMapping === '0'){
+               return;
+            }
+            type = mapDatatype(edsObj.dictionary[index].subindices[subindex].DataType);
+            name = edsObj.dictionary[index].subindices[subindex].ParameterName;
          }
+         else {
+            type = mapDatatype(edsObj.dictionary[index].DataType);
+            name = edsObj.dictionary[index].ParameterName;
+         }
+
          var oldStartbit = startbit;
          startbit = len + startbit;
          return {
@@ -142,8 +165,8 @@ function compile(edsObj){
             scaling: 1,
             canid: canid,
             addNodeId: addNodeId,
-            type: mapDatatype(edsObj.dictionary[index].subindices[subindex].DataType),
-            name: edsObj.dictionary[index].subindices[subindex].ParameterName,
+            type: type,
+            name: name,
             extid: extid
          };
       });
@@ -193,6 +216,7 @@ var addHex = R.curry(function(a, b){
 function mapDatatype(v){
    'use strict';
    var map = {
+      '0x1': 'bool',
       '0x2': 's8',
       '0x3': 's16',
       '0x4': 's32',
@@ -200,5 +224,13 @@ function mapDatatype(v){
       '0x6': 'u16',
       '0x7': 'u32'
    };
-   return inRangeHex("0x2", "0x8", v) ? map[v] : 'unsupported';
+   return inRangeHex("0x1", "0x8", v) ? map[v] : 'unsupported';
 }
+
+// this mapping is more readable than using algebra
+var predefinedCobIds = {
+   '0x1800': '$NodeID+0x180',
+   '0x1801': '$NodeID+0x280',
+   '0x1802': '$NodeID+0x380',
+   '0x1803': '$NodeID+0x480',
+};
