@@ -18,7 +18,7 @@ module.exports = {
 
 function setmtime(path, time){
    return new Promise(function(resolve, reject){
-      fs.utime(path, Math.floor(Date.now()/1000), (new Date(time)).getTime()/1000, function(err){
+      fs.utimes(path, Math.floor(Date.now()/1000), (new Date(time)).getTime()/1000, function(err){
          return err ? reject(err) : resolve();
       });
    });
