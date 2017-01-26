@@ -12,8 +12,17 @@ module.exports = {
   writeFile: writeFile,
   readFile: readFile,
   deleteFile: deleteFile,
-  list: list
+  list: list,
+  setmtime: setmtime
 };
+
+function setmtime(path, time){
+   return new Promise(function(resolve, reject){
+      fs.utime(path, Math.floor(Date.now()/1000), (new Date(time)).getTime()/1000, function(err){
+         return err ? reject(err) : resolve();
+      });
+   });
+}
 
 // :: (String) -> Promise(Error, Stats)
 function lstatAsync(filepath){
