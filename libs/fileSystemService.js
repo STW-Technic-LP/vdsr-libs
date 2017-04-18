@@ -38,9 +38,9 @@ function lstatAsync(filepath){
 }
 
 // :: (String, String) -> Promise(Error, ())
-function writeFileAsync(filePath, data) {
+function writeFileAsync(filePath, data, opts) {
   return new Promise(function(resolve, reject) {
-    fs.writeFile(filePath, data, function(err) {
+    fs.writeFile(filePath, data, opts, function(err) {
       return err ? reject(err) : resolve();
     });
   });
@@ -268,11 +268,11 @@ function prune(filepath, maxSize){
 }
 
 // :: (String, String) -> Promise(Error, ())
-function writeFile(filepath, data) {
-  return writeFileAsync(filepath, data)
+function writeFile(filepath, data, opts) {
+  return writeFileAsync(filepath, data, opts)
   .catch(only(isENOENT, function() {
     return mkdirAsync(path.dirname(filepath))
-    .then(writeFileAsync.bind(null,filepath, data))
+    .then(writeFileAsync.bind(null,filepath, data, opts))
     .catch(function(e){
       console.log("Error when attempting to write file after new folder was created... deleting: ", filepath, e );
       return rmdirAsync(filepath);
