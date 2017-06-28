@@ -1,6 +1,6 @@
 {
   "name": "vdsr-libs",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Project-specific libraries that are used by STW Technic LP",
   "main": "index.js",
   "scripts": {
