@@ -4,6 +4,9 @@ var comms;
 var Bluebird = require('bluebird');
 var channelName = 'fileMan';
 var requestCounter = 0;
+var JSZip = require('jszip');
+var path = require('path');
+var fs = require('fs');
 
 module.exports = function(opts){
 
@@ -53,9 +56,8 @@ function create(device, file, opts){
    }
 
    Object.keys(file).forEach(function(k){
-      opts[k] = file[k];
+      opts.options[k] = file[k];
    });
-   opts.commandOptions = opts;
 
    return _request(channelName, 'create', {
       serialNumber: device,
@@ -63,12 +65,20 @@ function create(device, file, opts){
    });
 }
 
-function read(device, filename, opts){
+function read(device, filenames, opts){
    if(!_isObject(opts) || !_isObject(opts.options) || !opts.options.hasOwnProperty('interfaceType')){
       return Bluebird.reject('No interface configured for this device: '+device);
    }
 
-   opts.filename = filename;
+   if(opts.zip){
+      var zip = new JSZip();
+      zip.file(device, '',{dir: true});
+      filenames.forEach(function(filename){
+         zip.file(path.join(device,filename), fs.createReadStream(path.join(opts.logFilesBasePath, device,filename)));
+      });
+      return zip.generateNodeStream({streamFiles:true});
+   }
+
    return _request(channelName, 'read', {
       serialNumber: device,
       commandOptions: opts.options
