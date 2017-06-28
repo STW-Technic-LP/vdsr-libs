@@ -52,7 +52,10 @@ function create(device, file, opts){
       return Bluebird.reject('No interface configured for this device: '+device);
    }
 
-   opts.commandOptions = Object.assign(opts, file);
+   Object.keys(file).forEach(function(k){
+      opts[k] = file[k];
+   });
+   opts.commandOptions = opts;
 
    return _request(channelName, 'create', {
       serialNumber: device,
