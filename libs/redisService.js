@@ -5,8 +5,8 @@ var redis = require('promise-redis')(function(resolver){
    return new Bluebird(resolver);
 });
 var client = redis.createClient(
-   process.env.REDIS_PORT, 
-   process.env.REDIS_HOST
+   process.env.REDIS_PORT || null,
+   process.env.REDIS_HOST || null
 );
 client.on("error", function(err){
    console.error("RedisService::createClient => Error in client creation: ", err);
