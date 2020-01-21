@@ -99,7 +99,7 @@ function _request(channel, cmd, data, noResponse){
       }
       var timeoutId = setTimeout(function(){
          reject(new Error('Request timeout for command: '+cmd));
-      }, 30000);
+      }, 300000);
       comms.once(cmd+requestCounter, function(d){
          clearTimeout(timeoutId);
          resolve(d);

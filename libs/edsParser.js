@@ -124,8 +124,10 @@ function compile(edsObj){
 
       // get can id
       var cobIdBin = toBinaryFromHex(cobIdStr);
+      console.log('cobidbin: ', cobIdStr);
       var canidBin = extid ? cobIdBin.substr(-29) : cobIdBin.substr(-11);
       var canid = toHexFromBinary(canidBin);
+      console.log('canid: ', canid)
       var addNodeId = hexIdx !== 0;
 
       // get mapped object for each subindex
