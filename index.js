@@ -5,5 +5,8 @@ const edsParser = require('./libs/edsParser.js');
 const fileManComms = require('./libs/filemanComms.js');
 
 module.exports = {   
-   redisService, fsService, edsParser, fileManComms
+   redisService: redisService, 
+   fsService: fsService, 
+   edsParser: edsParser, 
+   fileManComms:fileManComms
 };
